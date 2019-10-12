@@ -7,6 +7,18 @@
     <groupId>njp-dependency-injection</groupId>
     <artifactId>njp-dependency-injection</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <name>njp-dependency-injection</name>
 
+    <properties>
+        <java.version>11</java.version>
+    </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.8</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>
