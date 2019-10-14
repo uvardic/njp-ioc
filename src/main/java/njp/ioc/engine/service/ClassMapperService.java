@@ -5,8 +5,8 @@ import njp.ioc.annotation.Bean;
 import njp.ioc.annotation.Component;
 import njp.ioc.annotation.Service;
 import njp.ioc.engine.model.ClassProperties;
+import njp.ioc.exception.ClassMappingException;
 import njp.ioc.utilities.ClassPropertiesComparator;
-import njp.ioc.utilities.ConstructorComparator;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -24,22 +24,17 @@ public class ClassMapperService {
         CLASS_ANNOTATIONS.add(Component.class);
     }
 
-    public Set<ClassProperties> mapClasses(Set<Class<?>> locatedClasses) {
+    public LinkedList<ClassProperties> mapClasses(Set<Class<?>> locatedClasses) throws ClassMappingException {
         return locatedClasses.stream()
                 .filter(locatedClass -> !locatedClass.isInterface())
-                .map(
-                        locatedClass -> {
-                            ClassProperties classProperties = new ClassProperties(
-                                    locatedClass, findAnnotation(locatedClass), findConstructor(locatedClass)
-                            );
-                            classProperties.addAllDependencies(findDependencies(locatedClass));
-                            return classProperties;
-                        }
-                )
+                .map(locatedClass -> new ClassProperties(
+                        locatedClass, findAnnotation(locatedClass), findConstructor(locatedClass),
+                        findDependencies(locatedClass)
+                ))
                 // Sortiramo klase po broju parametara u konstruktoru.
                 // Zelimo prvo da instanciramo klase bez parametara kako bi postigli bolje performanse.
                 .sorted(new ClassPropertiesComparator())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     private Annotation findAnnotation(Class<?> locatedClass) {
@@ -52,13 +47,12 @@ public class ClassMapperService {
 
     private Constructor<?> findConstructor(Class<?> locatedClass) {
         return Arrays.stream(locatedClass.getDeclaredConstructors())
-                // Uzimamo konstruktor sa najvise parametara
-                .max(new ConstructorComparator())
-                .map(constructor -> {
-                    constructor.setAccessible(true);
-                    return constructor;
-                })
-                .orElseThrow(() -> new RuntimeException("How is it possible not to have constructor?!"));
+                .filter(constructor -> constructor.getParameterCount() == 0)
+                .peek(constructor -> constructor.setAccessible(true))
+                .findFirst()
+                .orElseThrow(() -> new ClassMappingException(
+                        String.format("%s failed to provide a default constructor!", locatedClass)
+                ));
     }
 
     private List<Class<?>> findDependencies(Class<?> locatedClass) {

@@ -9,8 +9,8 @@ public class ClassPropertiesComparator implements Comparator<ClassProperties> {
     @Override
     public int compare(ClassProperties classProperties, ClassProperties other) {
         return Integer.compare(
-                classProperties.getConstructor().getParameterCount(),
-                other.getConstructor().getParameterCount()
+                classProperties.getDependencies().size(),
+                other.getDependencies().size()
         );
     }
 }

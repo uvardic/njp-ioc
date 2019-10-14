@@ -7,10 +7,7 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 
 @Data
-// TODO ENIGMA
 public class ClassProperties {
-
-    private Object instance;
 
     private final Class<?> classType;
 
@@ -18,14 +15,20 @@ public class ClassProperties {
 
     private final Constructor<?> constructor;
 
-    private final List<Class<?>> dependencies = new ArrayList<>();
+    private final List<Class<?>> dependencies;
 
-    private final Object[] dependencyInstances = new Object[dependencies.size()];
+    private final Object[] instantiatedDependencies;
 
-    public ClassProperties(Class<?> classType, Annotation annotation, Constructor<?> constructor) {
+    private final List<ClassProperties> dependantClasses = new ArrayList<>();
+
+    public ClassProperties(
+            Class<?> classType, Annotation annotation, Constructor<?> constructor, List<Class<?>> dependencies
+    ) {
         this.classType = classType;
         this.annotation = annotation;
         this.constructor = constructor;
+        this.dependencies = dependencies;
+        this.instantiatedDependencies = new Object[dependencies.size()];
     }
 
     public List<Class<?>> getDependencies() {
@@ -49,16 +52,27 @@ public class ClassProperties {
     public void addDependencyInstance(Object instance) {
         dependencies.stream()
                 .filter(dependency -> dependency.isAssignableFrom(instance.getClass()))
-                .forEach(dependency -> dependencyInstances[dependencies.indexOf(dependency)] = instance);
+                .forEach(dependency -> instantiatedDependencies[dependencies.indexOf(dependency)] = instance);
     }
 
     public boolean isResolved() {
-        return Arrays.stream(dependencyInstances).allMatch(Objects::nonNull);
+        return Arrays.stream(instantiatedDependencies).allMatch(Objects::nonNull);
     }
 
     public boolean isDependencyRequired(Class<?> dependency) {
         return dependencies.stream()
                 .anyMatch(d -> d.isAssignableFrom(dependency));
+    }
+
+    public List<ClassProperties> getDependantClasses() {
+        return Collections.unmodifiableList(dependantClasses);
+    }
+
+    public void addDependantClass(ClassProperties dependantClass) {
+        if (dependantClass == null)
+            throw new NullPointerException("Null can't be a dependency");
+
+        dependantClasses.add(dependantClass);
     }
 
     @Override
