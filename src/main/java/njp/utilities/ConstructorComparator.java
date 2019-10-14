@@ -1,4 +1,4 @@
-package njp.utils;
+package njp.utilities;
 
 import java.lang.reflect.Constructor;
 import java.util.Comparator;
@@ -12,4 +12,5 @@ public class ConstructorComparator implements Comparator<Constructor<?>> {
                 other.getParameterCount()
         );
     }
+
 }

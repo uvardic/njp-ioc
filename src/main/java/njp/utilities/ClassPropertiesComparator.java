@@ -1,10 +1,10 @@
-package njp.utils;
+package njp.utilities;
 
 import njp.engine.model.ClassProperties;
 
 import java.util.Comparator;
 
-public class ClassPropertiesConstructorComparator implements Comparator<ClassProperties> {
+public class ClassPropertiesComparator implements Comparator<ClassProperties> {
 
     @Override
     public int compare(ClassProperties classProperties, ClassProperties other) {
@@ -13,5 +13,4 @@ public class ClassPropertiesConstructorComparator implements Comparator<ClassPro
                 other.getConstructor().getParameterCount()
         );
     }
-
 }

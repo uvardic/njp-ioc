@@ -4,12 +4,10 @@ import lombok.Data;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Data
+// TODO ENIGMA
 public class ClassProperties {
 
     private Object instance;
@@ -20,7 +18,9 @@ public class ClassProperties {
 
     private final Constructor<?> constructor;
 
-    private final List<ClassProperties> dependencies = new ArrayList<>();
+    private final List<Class<?>> dependencies = new ArrayList<>();
+
+    private final Object[] dependencyInstances = new Object[dependencies.size()];
 
     public ClassProperties(Class<?> classType, Annotation annotation, Constructor<?> constructor) {
         this.classType = classType;
@@ -28,23 +28,37 @@ public class ClassProperties {
         this.constructor = constructor;
     }
 
-    public List<ClassProperties> getDependencies() {
+    public List<Class<?>> getDependencies() {
         return Collections.unmodifiableList(dependencies);
     }
 
-    public void addDependency(ClassProperties dependency) {
+    public void addDependency(Class<?> dependency) {
         if (dependency == null)
             throw new NullPointerException("Null can't be a dependency");
 
         dependencies.add(dependency);
     }
 
-    public void removeDependency(ClassProperties dependency) {
-        dependencies.remove(dependency);
+    public void addAllDependencies(Collection<Class<?>> dependencies) {
+        if (dependencies == null || dependencies.contains(null))
+            throw new NullPointerException("Null can't be a dependency");
+
+        this.dependencies.addAll(dependencies);
     }
 
-    public void removeAllDependencies() {
-        dependencies.clear();
+    public void addDependencyInstance(Object instance) {
+        dependencies.stream()
+                .filter(dependency -> dependency.isAssignableFrom(instance.getClass()))
+                .forEach(dependency -> dependencyInstances[dependencies.indexOf(dependency)] = instance);
+    }
+
+    public boolean isResolved() {
+        return Arrays.stream(dependencyInstances).allMatch(Objects::nonNull);
+    }
+
+    public boolean isDependencyRequired(Class<?> dependency) {
+        return dependencies.stream()
+                .anyMatch(d -> d.isAssignableFrom(dependency));
     }
 
     @Override
