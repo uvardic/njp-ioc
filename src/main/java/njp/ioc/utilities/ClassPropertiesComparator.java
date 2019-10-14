@@ -1,6 +1,6 @@
-package njp.utilities;
+package njp.ioc.utilities;
 
-import njp.engine.model.ClassProperties;
+import njp.ioc.engine.model.ClassProperties;
 
 import java.util.Comparator;
 

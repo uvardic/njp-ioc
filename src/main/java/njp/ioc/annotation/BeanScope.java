@@ -1,4 +1,4 @@
-package njp.annotation;
+package njp.ioc.annotation;
 
 public enum BeanScope {
 

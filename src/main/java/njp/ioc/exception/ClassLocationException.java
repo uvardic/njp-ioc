@@ -1,4 +1,4 @@
-package njp.exception;
+package njp.ioc.exception;
 
 public class ClassLocationException extends RuntimeException {
 

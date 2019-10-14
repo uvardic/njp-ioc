@@ -1,4 +1,4 @@
-package njp.engine.model;
+package njp.ioc.engine.model;
 
 import lombok.Data;
 

@@ -1,12 +1,12 @@
-package njp.engine.service;
+package njp.ioc.engine.service;
 
-import njp.annotation.Autowire;
-import njp.annotation.Bean;
-import njp.annotation.Component;
-import njp.annotation.Service;
-import njp.engine.model.ClassProperties;
-import njp.utilities.ClassPropertiesComparator;
-import njp.utilities.ConstructorComparator;
+import njp.ioc.annotation.Autowire;
+import njp.ioc.annotation.Bean;
+import njp.ioc.annotation.Component;
+import njp.ioc.annotation.Service;
+import njp.ioc.engine.model.ClassProperties;
+import njp.ioc.utilities.ClassPropertiesComparator;
+import njp.ioc.utilities.ConstructorComparator;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;

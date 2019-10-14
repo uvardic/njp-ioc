@@ -1,7 +1,7 @@
-package njp.engine.service;
+package njp.ioc.engine.service;
 
-import njp.engine.model.ClassProperties;
-import njp.exception.ClassInitializationException;
+import njp.ioc.engine.model.ClassProperties;
+import njp.ioc.exception.ClassInitializationException;
 
 import java.lang.reflect.InvocationTargetException;
 

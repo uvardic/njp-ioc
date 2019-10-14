@@ -1,4 +1,4 @@
-package njp.annotation;
+package njp.ioc.annotation;
 
 @Bean
 public @interface Component {

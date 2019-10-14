@@ -1,6 +1,6 @@
-package njp.engine.service;
+package njp.ioc.engine.service;
 
-import njp.exception.ClassLocationException;
+import njp.ioc.exception.ClassLocationException;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package njp.utilities;
+package njp.ioc.utilities;
 
 import java.lang.reflect.Constructor;
 import java.util.Comparator;
