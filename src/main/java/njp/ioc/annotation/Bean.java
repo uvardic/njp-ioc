@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Bean {
 
-    BeanScope scope() default BeanScope.PROTOTYPE;
+    BeanScope scope();
 
 }

@@ -1,21 +1,19 @@
 package njp.ioc.injector.service;
 
-import njp.ioc.injector.model.ClassProperties;
+import njp.ioc.annotation.Autowire;
 import njp.ioc.exception.ClassInitializationException;
+import njp.ioc.injector.model.ClassProperties;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
-import java.util.List;
 
 public class ClassInitializationService {
 
     private static final int MAX_ITERATIONS = 10000;
 
-    public List<ClassProperties> initializeClasses(LinkedList<ClassProperties> mappedClasses) throws ClassInitializationException {
-        final List<ClassProperties> initializedClasses = new ArrayList<>();
-
+    public void initializeClasses(LinkedList<ClassProperties> mappedClasses) throws ClassInitializationException {
         int iterationsCounter = 0;
 
         while (!mappedClasses.isEmpty()) {
@@ -24,49 +22,57 @@ public class ClassInitializationService {
 
             final ClassProperties enqueuedClass = mappedClasses.removeFirst();
 
-            if (enqueuedClass.isResolved()) {
-                final Object instance = initializeClass(enqueuedClass, mappedClasses);
-
-                for (int i = 0; i < instance.getClass().getDeclaredFields().length; i++) {
-                    final Field field = instance.getClass().getDeclaredFields()[i];
-
-                    final Object dependencyInstance = enqueuedClass.getInstantiatedDependencies()[i];
-
-                    try {
-                        field.setAccessible(true);
-                        field.set(instance, dependencyInstance);
-                    } catch (IllegalAccessException e) {
-                        throw new ClassInitializationException(e.getMessage(), e);
-                    }
-                }
-
-                initializedClasses.add(enqueuedClass);
-            } else {
+            if (enqueuedClass.isResolved())
+                initializeClass(enqueuedClass, mappedClasses);
+            else {
                 mappedClasses.addLast(enqueuedClass);
                 iterationsCounter++;
             }
         }
-
-        return initializedClasses;
     }
 
-    private Object initializeClass(ClassProperties enqueuedClass, LinkedList<ClassProperties> mappedClasses) {
-        updateDependantClasses(enqueuedClass, mappedClasses);
-
+    private void initializeClass(ClassProperties enqueuedClass, LinkedList<ClassProperties> mappedClasses) {
         try {
-            final Object instance = enqueuedClass.getConstructor().newInstance();
+            final Object classInstance = enqueuedClass.getConstructor().newInstance();
 
-            // Trazimo klase koje kao dependency imaju trenutno instanciranu klasu i dodajemo je u
-            // niz instanciranih dependency-a
             mappedClasses.stream()
                     .filter(mappedClass -> mappedClass.isDependencyRequired(enqueuedClass.getClassType()))
-                    .forEach(mappedClass -> mappedClass.addDependencyInstance(instance));
+                    .forEach(mappedClass -> mappedClass.addDependencyInstance(classInstance));
 
-            return instance;
+            for (int i = 0; i < classInstance.getClass().getDeclaredFields().length; i++) {
+                final Field field = classInstance.getClass().getDeclaredFields()[i];
+
+                if (!field.isAnnotationPresent(Autowire.class))
+                    continue;
+
+                final Object dependencyInstance = enqueuedClass.getInstantiatedDependencies()[i];
+
+                field.setAccessible(true);
+                field.set(classInstance, dependencyInstance);
+
+                if (field.getAnnotation(Autowire.class).verbose())
+                    printFieldInfo(classInstance, field);
+            }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ClassInitializationException(e.getMessage(), e);
         }
     }
+
+    private void printFieldInfo(Object classInstance, Field field) {
+        try {
+            System.out.println(String.format(
+                    "Initialized %s %s in %s on %s with %s",
+                    field.getType(),
+                    field.getName(),
+                    field.getDeclaringClass().getName(),
+                    new Date(),
+                    field.get(classInstance).hashCode()
+            ));
+        } catch (IllegalAccessException e) {
+            throw new ClassInitializationException(e.getMessage(), e);
+        }
+    }
+
 
     private void updateDependantClasses(ClassProperties enqueuedClass, LinkedList<ClassProperties> mappedClasses) {
         enqueuedClass.getDependencies()
@@ -75,5 +81,4 @@ public class ClassInitializationService {
                         .forEach(mappedClass -> mappedClass.addDependantClass(enqueuedClass))
                 );
     }
-
 }
