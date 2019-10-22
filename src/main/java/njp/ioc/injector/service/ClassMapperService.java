@@ -1,10 +1,10 @@
-package njp.ioc.engine.service;
+package njp.ioc.injector.service;
 
 import njp.ioc.annotation.Autowire;
 import njp.ioc.annotation.Bean;
 import njp.ioc.annotation.Component;
 import njp.ioc.annotation.Service;
-import njp.ioc.engine.model.ClassProperties;
+import njp.ioc.injector.model.ClassProperties;
 import njp.ioc.exception.ClassMappingException;
 import njp.ioc.utilities.ClassPropertiesComparator;
 
@@ -38,6 +38,8 @@ public class ClassMapperService {
     }
 
     private Annotation findAnnotation(Class<?> locatedClass) {
+        // Gledamo sve anotacije prisutne na klasi i trazimo one koje se poklapaju
+        // sa nasim anotacijama (CLASS_ANNOTATIONS)
         return Arrays.stream(locatedClass.getAnnotations())
                 .filter(annotation -> CLASS_ANNOTATIONS.contains(annotation.annotationType()))
                 .findFirst()
@@ -46,6 +48,7 @@ public class ClassMapperService {
     }
 
     private Constructor<?> findConstructor(Class<?> locatedClass) {
+        // Trazimo obavezni konstruktor i postavljamo mu accessible flag na true
         return Arrays.stream(locatedClass.getDeclaredConstructors())
                 .filter(constructor -> constructor.getParameterCount() == 0)
                 .peek(constructor -> constructor.setAccessible(true))
@@ -56,6 +59,7 @@ public class ClassMapperService {
     }
 
     private List<Class<?>> findDependencies(Class<?> locatedClass) {
+        // Gledamo sva polja koja su anotirana sa @Autowire mapiramo ih u Class<?> i vracamo kao listu
         return Arrays.stream(locatedClass.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Autowire.class))
                 .peek(field -> field.setAccessible(true))

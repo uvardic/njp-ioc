@@ -1,9 +1,9 @@
-package njp.ioc.engine;
+package njp.ioc.injector;
 
-import njp.ioc.engine.model.ClassProperties;
-import njp.ioc.engine.service.ClassInitializationService;
-import njp.ioc.engine.service.ClassLocatorService;
-import njp.ioc.engine.service.ClassMapperService;
+import njp.ioc.injector.model.ClassProperties;
+import njp.ioc.injector.service.ClassInitializationService;
+import njp.ioc.injector.service.ClassLocatorService;
+import njp.ioc.injector.service.ClassMapperService;
 
 import java.util.LinkedList;
 import java.util.Set;

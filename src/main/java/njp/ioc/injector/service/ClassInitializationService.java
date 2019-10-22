@@ -1,10 +1,13 @@
-package njp.ioc.engine.service;
+package njp.ioc.injector.service;
 
-import njp.ioc.engine.model.ClassProperties;
+import njp.ioc.injector.model.ClassProperties;
 import njp.ioc.exception.ClassInitializationException;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ClassInitializationService {
 
@@ -13,29 +16,41 @@ public class ClassInitializationService {
     public List<ClassProperties> initializeClasses(LinkedList<ClassProperties> mappedClasses) throws ClassInitializationException {
         final List<ClassProperties> initializedClasses = new ArrayList<>();
 
-        int counter = 0;
+        int iterationsCounter = 0;
 
         while (!mappedClasses.isEmpty()) {
-            if (counter > MAX_ITERATIONS)
+            if (iterationsCounter > MAX_ITERATIONS)
                 throw new ClassInitializationException("Maximum number of iterations was reached!");
 
             final ClassProperties enqueuedClass = mappedClasses.removeFirst();
 
-            System.out.println(enqueuedClass);
-
             if (enqueuedClass.isResolved()) {
-                initializeClass(enqueuedClass, mappedClasses);
+                final Object instance = initializeClass(enqueuedClass, mappedClasses);
+
+                for (int i = 0; i < instance.getClass().getDeclaredFields().length; i++) {
+                    final Field field = instance.getClass().getDeclaredFields()[i];
+
+                    final Object dependencyInstance = enqueuedClass.getInstantiatedDependencies()[i];
+
+                    try {
+                        field.setAccessible(true);
+                        field.set(instance, dependencyInstance);
+                    } catch (IllegalAccessException e) {
+                        throw new ClassInitializationException(e.getMessage(), e);
+                    }
+                }
+
                 initializedClasses.add(enqueuedClass);
             } else {
                 mappedClasses.addLast(enqueuedClass);
-                counter++;
+                iterationsCounter++;
             }
         }
 
         return initializedClasses;
     }
 
-    private void initializeClass(ClassProperties enqueuedClass, LinkedList<ClassProperties> mappedClasses) {
+    private Object initializeClass(ClassProperties enqueuedClass, LinkedList<ClassProperties> mappedClasses) {
         updateDependantClasses(enqueuedClass, mappedClasses);
 
         try {
@@ -46,6 +61,8 @@ public class ClassInitializationService {
             mappedClasses.stream()
                     .filter(mappedClass -> mappedClass.isDependencyRequired(enqueuedClass.getClassType()))
                     .forEach(mappedClass -> mappedClass.addDependencyInstance(instance));
+
+            return instance;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ClassInitializationException(e.getMessage(), e);
         }

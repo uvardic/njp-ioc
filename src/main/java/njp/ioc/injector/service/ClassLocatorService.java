@@ -1,4 +1,4 @@
-package njp.ioc.engine.service;
+package njp.ioc.injector.service;
 
 import njp.ioc.exception.ClassLocationException;
 
