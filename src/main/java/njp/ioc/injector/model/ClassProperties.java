@@ -19,8 +19,6 @@ public class ClassProperties {
 
     private final Object[] instantiatedDependencies;
 
-    private final List<ClassProperties> dependantClasses = new ArrayList<>();
-
     public ClassProperties(
             Class<?> classType, Annotation annotation, Constructor<?> constructor, List<Class<?>> dependencies
     ) {
@@ -62,17 +60,6 @@ public class ClassProperties {
     public boolean isDependencyRequired(Class<?> dependency) {
         return dependencies.stream()
                 .anyMatch(d -> d.isAssignableFrom(dependency));
-    }
-
-    public List<ClassProperties> getDependantClasses() {
-        return Collections.unmodifiableList(dependantClasses);
-    }
-
-    public void addDependantClass(ClassProperties dependantClass) {
-        if (dependantClass == null)
-            throw new NullPointerException("Null can't be a dependency");
-
-        dependantClasses.add(dependantClass);
     }
 
     @Override

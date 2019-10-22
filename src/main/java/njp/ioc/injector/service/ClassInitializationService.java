@@ -73,12 +73,4 @@ public class ClassInitializationService {
         }
     }
 
-
-    private void updateDependantClasses(ClassProperties enqueuedClass, LinkedList<ClassProperties> mappedClasses) {
-        enqueuedClass.getDependencies()
-                .forEach(dependency -> mappedClasses.stream()
-                        .filter(mappedClass -> dependency.isAssignableFrom(mappedClass.getClassType()))
-                        .forEach(mappedClass -> mappedClass.addDependantClass(enqueuedClass))
-                );
-    }
 }
